@@ -7,52 +7,47 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.repository.AuthRepository
 import com.example.myapplication.util.Result
-import com.example.myapplication.util.SessionManager
+
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 @HiltViewModel
 class LoginScreenViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
-    private val sessionManager: SessionManager
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    var state by mutableStateOf(LoginScreenState())
-        private set
+    private val _state = MutableStateFlow(LoginScreenState())
+    val state = _state.asStateFlow()
 
     fun onEvent(event: LoginScreenEvent) {
         when (event) {
-            is LoginScreenEvent.EmailUpdated -> {
-                state = state.copy(email = event.newEmail)
-            }
-            is LoginScreenEvent.PasswordUpdated -> {
-                state = state.copy(password = event.newPassword)
-            }
-            is LoginScreenEvent.RememberMeChanged -> {
-                state = state.copy(rememberMe = event.rememberMe)
-            }
-            LoginScreenEvent.LoginBtnClicked -> {
-                login()
-            }
+            is LoginScreenEvent.EmailUpdated -> onEmailUpdated(event.newEmail)
+            is LoginScreenEvent.PasswordUpdated -> onPasswordUpdated(event.newPassword)
+            LoginScreenEvent.LoginBtnClicked -> login()
+            else -> {}
         }
     }
 
-    private fun login() {
-        if (state.email.isBlank() || state.password.isBlank()) {
-            state = state.copy(loginResult = Result.Failure("Пожалуйста, заполните все поля"))
-            return
-        }
+    private fun onEmailUpdated(newEmail: String) {
+        _state.update { it.copy(email = newEmail) }
+    }
 
-        viewModelScope.launch {
-            val email = state.email
-            val password = state.password
-            val result = authRepository.login(email, password)
-            state = state.copy(loginResult = result)
-            
-            if (result is Result.Success && state.rememberMe) {
-                sessionManager.setLoggedIn(true)
-            }
-        }
+    private fun onPasswordUpdated(newPassword: String) {
+        _state.update { it.copy(password = newPassword) }
+    }
+
+    private fun login() = viewModelScope.launch(Dispatchers.IO) {
+        val email = state.value.email
+        val password = state.value.password
+        if (email.isEmpty() || password.isEmpty()) return@launch
+
+        val result = authRepository.login(email, password)
+        this@LoginScreenViewModel._state.update { it.copy(loginResult = result) }
     }
 }

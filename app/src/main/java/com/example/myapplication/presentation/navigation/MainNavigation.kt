@@ -23,15 +23,15 @@ sealed class Screen {
 }
 
 @Composable
-fun MainNavigation(
+fun MainNav(
     modifier: Modifier = Modifier,
     navHostController: NavHostController,
-    startDestination: Screen
+    isLoggedIn: Boolean
 ) {
     NavHost(
+        modifier = modifier,
         navController = navHostController,
-        startDestination = startDestination,
-        modifier = modifier
+        startDestination = if (isLoggedIn) Screen.Main else Screen.Login
     ) {
         composable<Screen.Login> {
             LoginScreen(
@@ -40,21 +40,15 @@ fun MainNavigation(
                 }
             )
         }
-
         composable<Screen.Register> {
-            RegisterScreen(
-                onNavigateTo = { navigateTo ->
-                    navHostController.navigate(navigateTo)
-                }
-            )
+            RegisterScreen { navigateTo ->
+                navHostController.navigate(navigateTo)
+            }
         }
-
         composable<Screen.Main> {
-            MainScreen(
-                onNavigateTo = { navigateTo ->
-                    navHostController.navigate(navigateTo)
-                }
-            )
+            MainScreen { navigateTo ->
+                navHostController.navigate(navigateTo)
+            }
         }
     }
 }

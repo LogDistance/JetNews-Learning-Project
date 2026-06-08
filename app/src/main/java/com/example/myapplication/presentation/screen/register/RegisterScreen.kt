@@ -3,16 +3,21 @@ package com.example.myapplication.presentation.screen.register
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,26 +27,32 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.myapplication.R
 import com.example.myapplication.presentation.navigation.Screen
-import com.example.myapplication.presentation.screen.register.RegisterScreenViewModel
-import com.example.myapplication.ui.component.StyledButton
+import com.example.myapplication.presentation.theme.CyanNeon
+import com.example.myapplication.presentation.theme.CyberDark
+import com.example.myapplication.presentation.theme.PinkNeon
+import com.example.myapplication.presentation.ui.component.StyledButton
 import com.example.myapplication.util.Result
 
 @Composable
 fun RegisterScreen(
     onNavigateTo: (Screen) -> Unit = {}
 ){
-    RegisterView(
-        onNavigateTo = onNavigateTo)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(CyberDark)
+    ) {
+        RegisterView(onNavigateTo = onNavigateTo)
+    }
 }
-
-
 
 @Composable
 fun RegisterView(
@@ -68,15 +79,23 @@ fun RegisterView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0D0221))
-            .padding(top = 100.dp),
+            .padding(horizontal = 30.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = stringResource(R.string.app_name),
-            fontSize = 25.sp,
-            color = Color.White
+        Spacer(modifier = Modifier.height(80.dp))
 
+        Text(
+            text = "NEW IDENTITY",
+            fontSize = 32.sp,
+            color = CyanNeon,
+            fontWeight = FontWeight.ExtraBold
+        )
+
+        Text(
+            text = "CREATE ACCOUNT",
+            fontSize = 14.sp,
+            color = PinkNeon,
+            modifier = Modifier.padding(bottom = 60.dp)
         )
 
         OutlinedTextField(
@@ -85,15 +104,28 @@ fun RegisterView(
             leadingIcon = {
                 Icon(
                     painter = rememberVectorPainter(image = Icons.Outlined.Person),
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = CyanNeon
                 )
             },
-            placeholder = { Text(text = stringResource(R.string.enter_username)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp, vertical = 8.dp)
-                .padding(top = 200.dp)
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.enter_username).uppercase(),
+                    color = CyanNeon.copy(alpha = 0.5f)
+                )
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedBorderColor = PinkNeon,
+                unfocusedBorderColor = CyanNeon,
+                cursorColor = PinkNeon
+            ),
+            shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+            modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = state.email,
@@ -101,14 +133,28 @@ fun RegisterView(
             leadingIcon = {
                 Icon(
                     painter = rememberVectorPainter(image = Icons.Outlined.Email),
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = CyanNeon
                 )
             },
-            placeholder = { Text(text = stringResource(R.string.enter_email)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp, vertical = 8.dp)
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.enter_email).uppercase(),
+                    color = CyanNeon.copy(alpha = 0.5f)
+                )
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedBorderColor = PinkNeon,
+                unfocusedBorderColor = CyanNeon,
+                cursorColor = PinkNeon
+            ),
+            shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+            modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = state.password,
@@ -116,35 +162,53 @@ fun RegisterView(
             leadingIcon = {
                 Icon(
                     painter = rememberVectorPainter(image = Icons.Outlined.Lock),
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = CyanNeon
                 )
             },
-            placeholder = { Text(text = stringResource(R.string.enter_password)) },
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.enter_password).uppercase(),
+                    color = CyanNeon.copy(alpha = 0.5f)
+                )
+            },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp, vertical = 8.dp)
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedBorderColor = PinkNeon,
+                unfocusedBorderColor = CyanNeon,
+                cursorColor = PinkNeon
+            ),
+            shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+            modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(40.dp))
 
         StyledButton(
             onClick = { viewModel.onEvent(RegisterScreenEvent.RegisterClicked) },
-            modifier = Modifier.padding(top = 30.dp)
+            modifier = Modifier.fillMaxWidth(),
+            containerColor = CyanNeon,
+            contentColor = Color.Black
         ) {
             Text(
-                text = "Зарегистрироваться",
-                fontSize = 25.sp
+                text = stringResource(R.string.register).uppercase(),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
             )
         }
 
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
-            text = "Уже есть аккаунт?Войти",
-            fontSize = 16.sp,
-            color = Color.White,
+            text = stringResource(R.string.already_have_an_account).uppercase(),
+            fontSize = 12.sp,
+            color = CyanNeon,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier
-                .padding(top = 20.dp)
-                .clickable {
-                    onNavigateTo(Screen.Login)
-                }
+                .clickable { onNavigateTo(Screen.Login) }
+                .padding(8.dp)
         )
     }
 }
@@ -152,5 +216,7 @@ fun RegisterView(
 @Preview(showBackground = true)
 @Composable
 fun RegisterScreenPreview() {
-    RegisterView(onNavigateTo = {})
+    Box(modifier = Modifier.fillMaxSize().background(CyberDark)) {
+        RegisterView(onNavigateTo = {})
+    }
 }

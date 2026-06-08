@@ -1,158 +1,192 @@
 package com.example.myapplication.presentation.screen.login
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.myapplication.R
-import com.example.myapplication.util.Result
 import com.example.myapplication.presentation.navigation.Screen
-import com.example.myapplication.ui.component.StyledButton
+import com.example.myapplication.presentation.theme.CyanNeon
+import com.example.myapplication.presentation.theme.CyberDark
+import com.example.myapplication.presentation.theme.PinkNeon
+import com.example.myapplication.presentation.ui.component.StyledButton
+import com.example.myapplication.util.Result
 
 @Composable
 fun LoginScreen(
-    onNavigateTo: (Screen) -> Unit = {},
-    viewModel: LoginScreenViewModel = hiltViewModel()
+    onNavigateTo: (Screen) -> Unit
 ) {
+    val viewModel = hiltViewModel<LoginScreenViewModel>()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
     val context = LocalContext.current
-    val state = viewModel.state
-    val loginResult = viewModel.state.loginResult
-    LaunchedEffect(loginResult) {
-        when (loginResult) {
-            is Result.Success -> {
-                onNavigateTo(Screen.Main)
+    LaunchedEffect(state.loginResult) {
+        state.loginResult?.let { loginResult ->
+            when(loginResult) {
+                is Result.Success<Unit> -> {
+                    onNavigateTo(Screen.Main)
+                }
+                is Result.Failure<Unit> -> {
+                    Toast.makeText(context, loginResult.msg, Toast.LENGTH_LONG).show()
+                }
             }
-
-            is Result.Failure -> {
-                Toast.makeText(context, loginResult.msg, Toast.LENGTH_LONG).show()
-            }
-
-            null -> {}
         }
     }
 
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(CyberDark)
+    ) {
+        LoginView(
+            state = state,
+            onNavigateTo = onNavigateTo,
+            onEvent = viewModel::onEvent
+        )
+    }
+}
+
+@Composable
+fun LoginView(
+    onNavigateTo: (Screen) -> Unit = {},
+    state: LoginScreenState = LoginScreenState(),
+    onEvent: (LoginScreenEvent) -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0D0221))
-            .padding(top = 100.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .padding(horizontal = 30.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(80.dp))
+        
         Text(
-            text = stringResource(R.string.app_name),
-            fontSize = 25.sp,
-            color = Color.White
-
+            text = "ACCESS REQUIRED",
+            fontSize = 32.sp,
+            color = CyanNeon,
+            fontWeight = FontWeight.ExtraBold
         )
-
-        Image(
-            painter = painterResource(R.drawable.news_app_logo),
-            contentDescription = "News app login image",
-            modifier = Modifier
-                .size(180.dp)
-                .padding(top = 16.dp)
+        
+        Text(
+            text = "NIGHT CITY NETWORK",
+            fontSize = 14.sp,
+            color = PinkNeon,
+            modifier = Modifier.padding(bottom = 60.dp)
         )
 
         OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = state.email,
-            onValueChange = { viewModel.onEvent(LoginScreenEvent.EmailUpdated(it)) },
+            onValueChange = { onEvent(LoginScreenEvent.EmailUpdated(it)) },
             leadingIcon = {
                 Icon(
                     painter = rememberVectorPainter(image = Icons.Outlined.Email),
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = CyanNeon
                 )
-
             },
             placeholder = {
-                Text(text = stringResource(R.string.enter_email))
+                Text(
+                    text = stringResource(id = R.string.enter_email).uppercase(),
+                    color = CyanNeon.copy(alpha = 0.5f)
+                )
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp, vertical = 16.dp)
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedBorderColor = PinkNeon,
+                unfocusedBorderColor = CyanNeon,
+                cursorColor = PinkNeon
+            ),
+            shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp)
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = state.password,
-            onValueChange = { viewModel.onEvent(LoginScreenEvent.PasswordUpdated(it)) },
+            onValueChange = { onEvent(LoginScreenEvent.PasswordUpdated(it)) },
             leadingIcon = {
                 Icon(
                     painter = rememberVectorPainter(image = Icons.Outlined.Lock),
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = CyanNeon
                 )
             },
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation(),
             placeholder = {
-                Text(text = stringResource(R.string.enter_password))
+                Text(
+                    text = stringResource(id = R.string.enter_password).uppercase(),
+                    color = CyanNeon.copy(alpha = 0.5f)
+                )
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp),
-            visualTransformation = PasswordVisualTransformation()
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedBorderColor = PinkNeon,
+                unfocusedBorderColor = CyanNeon,
+                cursorColor = PinkNeon
+            ),
+            shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp)
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = state.rememberMe,
-                onCheckedChange = { viewModel.onEvent(LoginScreenEvent.RememberMeChanged(it)) }
-            )
-            Text(text = "Запомнить меня",
-                color = Color.White)
-
-        }
+        Spacer(modifier = Modifier.height(40.dp))
 
         StyledButton(
-            onClick = { viewModel.onEvent(LoginScreenEvent.LoginBtnClicked) },
-            modifier = Modifier.padding(top = 30.dp)
+            onClick = { onEvent(LoginScreenEvent.LoginBtnClicked) },
+            modifier = Modifier.fillMaxWidth(),
+            containerColor = CyanNeon,
+            contentColor = Color.Black
         ) {
             Text(
-                text = stringResource(R.string.login),
-                fontSize = 25.sp,
-
+                text = stringResource(id = R.string.login).uppercase(),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
             )
         }
+        
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = stringResource(R.string.register),
-            fontSize = 16.sp,
-            color = Color.White,
+            text = stringResource(id = R.string.no_account_register).uppercase(),
+            fontSize = 12.sp,
+            color = CyanNeon,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier
-                .padding(top = 20.dp)
-                .clickable {
-                    onNavigateTo(Screen.Register)
-                }
+                .clickable { onNavigateTo(Screen.Register) }
+                .padding(8.dp)
         )
     }
 }
@@ -160,5 +194,7 @@ fun LoginScreen(
 @Composable
 @Preview(showBackground = true)
 fun LoginScreenPreview() {
-    LoginScreen()
+    Box(modifier = Modifier.fillMaxSize().background(CyberDark)) {
+        LoginView()
+    }
 }

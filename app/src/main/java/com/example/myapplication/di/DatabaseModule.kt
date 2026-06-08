@@ -2,8 +2,10 @@ package com.example.myapplication.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.myapplication.data.database.AppDatabase
 
-import com.example.myapplication.data.database.UserDatabase
+
+import com.example.myapplication.domain.dao.FavoriteNewsDao
 import com.example.myapplication.domain.dao.UserDao
 import dagger.Module
 import dagger.Provides
@@ -14,22 +16,27 @@ import javax.inject.Singleton
 
 
 @Module
-@InstallIn(SingletonComponent::class) // БЕЗ ЭТОГО НЕ ЗАРАБОТАЕТ HILT
-object DatabaseModule {
-
+@InstallIn(SingletonComponent::class)
+object DaoModule {
     @Provides
-    @Singleton // Чтобы база была в одном экземпляре
-    fun providesUserDatabase(@ApplicationContext context: Context): UserDatabase {
+    @Singleton
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(
             context,
-            UserDatabase::class.java,
-            "userDatabase"
+            AppDatabase::class.java,
+            "appDatabase.db"
         ).build()
     }
 
     @Provides
     @Singleton
-    fun provideUserDao(database: UserDatabase): UserDao {
-        return database.getUserDao()
+    fun provideUserDao(appDatabase: AppDatabase): UserDao {
+        return appDatabase.getUserDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFavoriteNewsDao(appDatabase: AppDatabase): FavoriteNewsDao {
+        return appDatabase.getFavoriteNewsDao()
     }
 }

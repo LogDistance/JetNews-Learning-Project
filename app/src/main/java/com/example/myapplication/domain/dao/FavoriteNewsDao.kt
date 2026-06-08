@@ -1,0 +1,18 @@
+package com.example.myapplication.domain.dao
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import com.example.myapplication.domain.entity.FavoriteNewsItemEntity
+
+@Dao
+interface FavoriteNewsDao {
+    @Insert
+    suspend fun addFavoriteNewsItem(favoriteNewsItemEntity: FavoriteNewsItemEntity)
+
+    @Query("DELETE FROM favorite_news WHERE id=:id")
+    suspend fun deleteFavoriteNewsItemById(id: String)
+
+    @Query("SELECT * FROM favorite_news")
+    suspend fun getAll(): List<FavoriteNewsItemEntity>
+}

@@ -1,0 +1,65 @@
+package com.example.myapplication.data.util
+
+import com.example.myapplication.data.dto.NewsItemDto
+import com.example.myapplication.domain.entity.FavoriteNewsItemEntity
+import com.example.myapplication.domain.model.NewsItem
+import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
+import java.security.MessageDigest
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+
+@OptIn(ExperimentalTime::class)
+fun NewsItemDto.toModel(isFavorite: Boolean = false): NewsItem {
+    return NewsItem(
+        id = generateNewsItemIdFromUrl(url),
+        title = title ?: "No Title",
+        url = url,
+        description = description ?: "No Description",
+        publishedBy = source?.name ?: "Unknown Source",
+        publishedAt = publishedAt?.let { Instant.parse(it).toLocalDateTime(TimeZone.currentSystemDefault()) }
+            ?: Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+        imageUrl = urlToImage ?: "",
+        isFavorite = isFavorite
+    )
+}
+
+@OptIn(ExperimentalTime::class)
+fun FavoriteNewsItemEntity.toModel(): NewsItem {
+    return NewsItem(
+        id = id,
+        title = title,
+        url = url,
+        description = description,
+        publishedBy = publishedBy,
+        publishedAt = Instant.fromEpochMilliseconds(publishedAt).toLocalDateTime(TimeZone.currentSystemDefault()),
+        imageUrl = imageUrl,
+        isFavorite = true
+    )
+}
+
+@OptIn(ExperimentalTime::class)
+fun NewsItem.toFavoriteNewsItemEntity(savedByUserId: String): FavoriteNewsItemEntity {
+    return FavoriteNewsItemEntity(
+        id = id,
+        title = title,
+        url = url,
+        description = description,
+        publishedBy = publishedBy,
+        publishedAt = publishedAt.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
+        imageUrl = imageUrl,
+        savedByUserId = savedByUserId
+    )
+}
+
+fun generateNewsItemIdFromUrl(url: String?): String {
+    return if (url != null) {
+        MessageDigest.getInstance("MD5")
+            .digest(url.toByteArray())
+            .joinToString("") { "%02x".format(it) }
+    } else {
+        System.currentTimeMillis().toString()
+    }
+}

@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -10,19 +13,34 @@ plugins {
 
 android {
     namespace = "com.example.myapplication"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.myapplication"
-        minSdk = 26
-        targetSdk = 35
+        applicationId = "com.example.newsapp"
+        minSdk = 24
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary = true
+        }
+    }
+
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localProperties.load(localPropertiesFile.inputStream())
     }
 
     buildTypes {
+
+        all {
+            val apiKey = localProperties.getProperty("API_KEY") ?: "\"\""
+            buildConfigField("String", "API_KEY", apiKey)
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -30,63 +48,66 @@ android {
                 "proguard-rules.pro"
             )
         }
+
+
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.1"
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_1_8
+        }
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 }
 
 dependencies {
     // Базовые библиотеки Android и Compose
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
-    // --- HILT ---
     implementation(libs.hilt.android)
-    // ВАЖНО: используем ksp и правильное имя из вашего TOML
+    implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.android.compiler)
 
-    // --- ROOM ---
-    implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    // ВАЖНО: подключаем компилятор Room (проверьте имя в libs.versions.toml)
+    implementation(libs.room.runtime)
     ksp(libs.androidx.room.compiler)
 
-    // --- RETROFIT ---
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.gson)
-    implementation(libs.okhttp)
-    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.serialization)
+    implementation(libs.androidx.navigation.compose)
 
-    // --- COIL ---
     implementation(libs.coil.compose)
 
-    // --- DATASTORE ---
-    implementation(libs.androidx.datastore.preferences)
-
-    // Тестирование и отладка
-    testImplementation(libs.junit)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.junit)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
-    debugImplementation(libs.androidx.compose.ui.tooling)
-
+    implementation(libs.kotlinx.datetime)
+    implementation(libs.bundles.ktor)
 
 }
